@@ -1,0 +1,38 @@
+APPLICATION
+---------------------------------------
+
+BUGS
+- Apres déconnexion d'une patient sur la page consentement et connexion d'un utilisateur avec rôle diffèrent, le site essai d'ouvrir la page consentement du patient précèdent et rencontre un erreur
+- MAJ des onglets et icones
+- Ajuster la validation de l'adresse et du téléphone
+- Ajuster le responsive de la navbar
+- Ajuster les messages d'erreurs comme dans register-patient 
+- Différencier l'erreur d'indisponibilité du serveur des erreurs CRUD
+- Ajuster message d'erreur d'indisponibilité du serveur pendant la connexion (qui n'affiche pas email ou mpd invalide mais plutôt serveur indisponible)
+- Ajuster la barre de chargement dans les calendriers
+
+FONCTIONNALITES
+- gestion des cookies
+- Mot de passe oublié
+- Notification
+- Ajouter pièce jointe au dossier médicale
+- Mail utilisateur apres opération( creation d'un médecin ou admin avec codes d'accés, etc...)
+- Hébergement
+- Droits d'accès et manuel d'utilisation
+
+Conseil de sécurité : utiliser un mot de passe fort (minimum 8 caractères, incluant majuscule, chiffre et symbole).
+
+DIAGRAMME DE CLASSE ET ENTITE RELATION
+---------------------------------------
+- Ajouter une relation OneToOne entre Message et Document
+- Ajouter une relation ManyToOne entre Ordonnance et Document
+- Ajouter image dans utilisateur pour photo de profil
+
+- Question? (Toujours lier un message à une consultation?)
+
+
+
+INFO
+------
+Quelle heure pour installation TFE?
+Combien de temps pour présentation ?

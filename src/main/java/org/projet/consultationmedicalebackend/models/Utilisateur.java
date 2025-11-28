@@ -16,6 +16,10 @@ public abstract class Utilisateur {
     @Column(nullable = false)
     private String prenom;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Sexe sexe;
+
     @Column(nullable = false)
     private String adresse;
 
@@ -35,9 +39,10 @@ public abstract class Utilisateur {
     public Utilisateur() {
     }
 
-    public Utilisateur(String nom, String prenom, String adresse, String telephone, String email, String motDePasse, RoleUtilisateur role) {
+    public Utilisateur(String nom, String prenom, Sexe sexe, String adresse, String telephone, String email, String motDePasse, RoleUtilisateur role) {
         this.nom = nom;
         this.prenom = prenom;
+        this.sexe = sexe;
         this.adresse = adresse;
         this.telephone = telephone;
         this.email = email;
@@ -67,6 +72,14 @@ public abstract class Utilisateur {
 
     public void setPrenom(String prenom) {
         this.prenom = prenom;
+    }
+
+    public Sexe getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 
     public String getAdresse() {

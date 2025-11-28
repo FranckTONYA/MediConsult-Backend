@@ -41,8 +41,8 @@ public class Medecin extends Utilisateur {
         super();
     }
 
-    public Medecin(String nom, String prenom, String adresse, String telephone, String email, String motDePasse, String specialite, String numINAMI, List<Consultation> consultations, List<PlanningMedecin> plannings, List<Patient> patients) {
-        super(nom, prenom, adresse, telephone, email, motDePasse, RoleUtilisateur.MEDECIN);
+    public Medecin(String nom, String prenom, Sexe sexe, String adresse, String telephone, String email, String motDePasse, String specialite, String numINAMI, List<Consultation> consultations, List<PlanningMedecin> plannings, List<Patient> patients) {
+        super(nom, prenom, sexe, adresse, telephone, email, motDePasse, RoleUtilisateur.MEDECIN);
         this.specialite = specialite;
         this.numINAMI = numINAMI;
         this.consultations = consultations;

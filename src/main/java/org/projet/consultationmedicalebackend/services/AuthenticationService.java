@@ -2,6 +2,7 @@ package org.projet.consultationmedicalebackend.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import org.apache.commons.text.StringEscapeUtils;
 import org.projet.consultationmedicalebackend.models.*;
 import org.projet.consultationmedicalebackend.repositories.*;
 import org.projet.consultationmedicalebackend.security.CustomUserDetails;
@@ -147,6 +148,7 @@ public class AuthenticationService {
         claims.put("dateNaissance", patient.getDateNaissance());
         claims.put("nom", patient.getNom());
         claims.put("prenom", patient.getPrenom());
+        claims.put("sexe", patient.getSexe());
         claims.put("adresse", patient.getAdresse());
         claims.put("telephone", patient.getTelephone());
         claims.put("email", patient.getEmail());
@@ -160,14 +162,9 @@ public class AuthenticationService {
 
         // 5. Envoyer code par email (seul le code est dans le mail)
         String subject = "Code de vérification inscription - Medi Consult App";
-        String body = "Bonjour " + patient.getPrenom() + ",\n\n" +
-                "Votre code de vérification est : " + code + "\n" +
-                "Il expire dans quelques minutes.\n\n" +
-                "Si vous n'avez pas demandé cette action, ignorez ce message.\n\n" +
-                "Bien cordialement, \n" +
-                "L'équipe Medi Consult ";
+        String htmlContent = buildVerificationEmail(patient.getPrenom(), code);
 
-        emailService.envoyerEmail(patient.getEmail(), subject, body);
+        emailService.envoyerEmail(patient.getEmail(), subject, htmlContent);
 
         // 6. Retourner le JWT au frontend (frontend doit le garder temporairement)
         response.status = true;
@@ -200,6 +197,7 @@ public class AuthenticationService {
         String email = (String) claims.get("email");
         String nom = (String) claims.get("nom");
         String prenom = (String) claims.get("prenom");
+        Sexe sexe = Sexe.valueOf((String) claims.get("sexe"));
         String encryptedPwd = (String) claims.get("pwd");
         String niss = (String) claims.get("niss");
         Date dateNaissance = new Date((Long) claims.get("dateNaissance"));
@@ -213,6 +211,7 @@ public class AuthenticationService {
         Patient patient = new Patient();
         patient.setNom(nom);
         patient.setPrenom(prenom);
+        patient.setSexe(sexe);
         patient.setEmail(email);
         patient.setMotDePasse(plainPassword);
         patient.setNiss(niss);
@@ -241,14 +240,9 @@ public class AuthenticationService {
         String token = jwtService.generateVerificationToken(claims);
 
         String subject = "Code de réinitialisation de mot de passe - Medi Consult App";
-        String body = "Bonjour " + opt.get().getPrenom() + ",\n\n" +
-                "Votre code de vérification est : " + code + "\n" +
-                "Ce code expirera dans quelques minutes.\n\n" +
-                "Si vous n'avez pas demandé cette action, ignorez ce message.\n\n" +
-                "Bien cordialement, \n" +
-                "L'équipe Medi Consult ";
+        String htmlContent = buildVerificationEmail(opt.get().getPrenom(), code);
 
-        emailService.envoyerEmail(email, subject, body);
+        emailService.envoyerEmail(email, subject, htmlContent);
 
         response.status = true;
         response.message = token;
@@ -296,4 +290,42 @@ public class AuthenticationService {
         int number = rnd.nextInt(max - min + 1) + min;
         return String.valueOf(number);
     }
+
+    private String buildVerificationEmail(String prenom, String code) {
+
+        String safePrenom = StringEscapeUtils.escapeHtml4(prenom);
+        String safeCode = StringEscapeUtils.escapeHtml4(code);
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\">")
+                .append("<title>Code Vérification</title></head><body>");
+
+        sb.append("<div style=\"font-family:Arial,sans-serif;background:#f5f7fa;padding:20px\">");
+
+        sb.append("<div style=\"max-width:520px;margin:auto;background:#ffffff;")
+                .append("padding:30px;border-radius:10px;\">");
+
+        sb.append("<h2 style=\"text-align:center;color:#2563eb\">🔐 Vérification Medi Consult</h2>");
+
+        sb.append("<p>Bonjour ").append(safePrenom).append(",</p>");
+        sb.append("<p>Voici votre code de vérification :</p>");
+
+        sb.append("<div style=\"background:#2563eb;color:white;padding:12px;")
+                .append("border-radius:8px;text-align:center;font-size:24px;font-weight:bold;")
+                .append("letter-spacing:4px;\">")
+                .append(safeCode)
+                .append("</div>");
+
+        sb.append("<p>Ce code expirera dans quelques minutes.<br>")
+                .append("Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>");
+
+        sb.append("<p style=\"text-align:center;font-size:14px;color:#64748b\">")
+                .append("Merci d'utiliser Medi Consult.</p>");
+
+        sb.append("</div></div></body></html>");
+
+        return sb.toString();
+    }
+
 }

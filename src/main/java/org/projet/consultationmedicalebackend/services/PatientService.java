@@ -12,5 +12,6 @@ public interface PatientService {
     Optional<Patient> findById(Long id);
     Optional<Patient> findByEmail(String email);
     Optional<Patient> findByNiss(String niss);
+    Optional<Patient> findByDossier(Long dossierId);
     void delete(Long id);
 }

@@ -24,18 +24,17 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Patient save(Patient patient) {
-        Patient patientFound = patientRepository.findById(patient.getId()).get();
-        if (patientFound.getDossierMedical() == null) {
+        if (patient.getDossierMedical() == null) {
             // Créer le dossier médical associé au patient
             DossierMedical dossierMedical = new DossierMedical();
 //            dossierMedical.setPatient(patient);
 //            dossierMedicalRepository.save(dossierMedical);
 
             // Associer le dossier medical au patient
-            patientFound.setDossierMedical(dossierMedical);
+            patient.setDossierMedical(dossierMedical);
         }
 
-        return patientRepository.save(patientFound);
+        return patientRepository.save(patient);
     }
 
     @Override
@@ -57,6 +56,12 @@ public class PatientServiceImpl implements PatientService {
     public Optional<Patient> findByNiss(String niss) {
         return patientRepository.findByNiss(niss);
     }
+
+    @Override
+    public Optional<Patient> findByDossier(Long dossierId) {
+        return patientRepository.findByDossierMedical_Id(dossierId);
+    }
+
 
     @Override
     public void delete(Long id) {

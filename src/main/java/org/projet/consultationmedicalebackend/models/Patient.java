@@ -24,13 +24,24 @@ public class Patient extends Utilisateur{
     private DossierMedical dossierMedical;
 
     @ManyToMany(mappedBy = "patients") // côté inverse de la relation
-//    @JsonBackReference(value = "medecin-patients")
     @JsonIgnore
     private List<Medecin> medecins = new ArrayList<>();
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Consultation> consultations;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Ordonnance> ordonnances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<AnalyseLabo> analyseLabos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Paiement> paiements = new ArrayList<>();
 
     public Patient() {
         super();
@@ -44,6 +55,7 @@ public class Patient extends Utilisateur{
         this.medecins = medecins;
         this.consultations = consultations;
     }
+
 
     public String getNiss() {
         return niss;
@@ -83,5 +95,30 @@ public class Patient extends Utilisateur{
 
     public void setConsultations(List<Consultation> consultations) {
         this.consultations = consultations;
+    }
+
+
+    public List<Ordonnance> getOrdonnances() {
+        return ordonnances;
+    }
+
+    public void setOrdonnances(List<Ordonnance> ordonnances) {
+        this.ordonnances = ordonnances;
+    }
+
+    public List<AnalyseLabo> getAnalyseLabos() {
+        return analyseLabos;
+    }
+
+    public void setAnalyseLabos(List<AnalyseLabo> analyseLabos) {
+        this.analyseLabos = analyseLabos;
+    }
+
+    public List<Paiement> getPaiements() {
+        return paiements;
+    }
+
+    public void setPaiements(List<Paiement> paiements) {
+        this.paiements = paiements;
     }
 }

@@ -39,6 +39,11 @@ public class PatientController {
         return patientService.findByNiss(niss);
     }
 
+    @GetMapping("/find-by-dossier/{idDossier}")
+    public Optional<Patient> getByDossier(@PathVariable Long idDossier) {
+        return patientService.findByDossier(idDossier);
+    }
+
     @PutMapping("/update/{id}")
     public Patient update(@PathVariable Long id, @RequestBody Patient patient) {
         patient.setId(id);

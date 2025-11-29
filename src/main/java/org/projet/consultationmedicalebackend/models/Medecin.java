@@ -37,6 +37,18 @@ public class Medecin extends Utilisateur {
     @JsonIgnore
     private List<Patient> patients = new ArrayList<>();
 
+    @OneToMany(mappedBy = "medecin", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Ordonnance> ordonnances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "medecin", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<AnalyseLabo> analyseLabos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "medecin", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PlanningMedecin> planningMedecins = new ArrayList<>();
+
     public Medecin() {
         super();
     }
@@ -88,6 +100,30 @@ public class Medecin extends Utilisateur {
 
     public void setPatients(List<Patient> patients) {
         this.patients = patients;
+    }
+
+    public List<Ordonnance> getOrdonnances() {
+        return ordonnances;
+    }
+
+    public void setOrdonnances(List<Ordonnance> ordonnances) {
+        this.ordonnances = ordonnances;
+    }
+
+    public List<AnalyseLabo> getAnalyseLabos() {
+        return analyseLabos;
+    }
+
+    public void setAnalyseLabos(List<AnalyseLabo> analyseLabos) {
+        this.analyseLabos = analyseLabos;
+    }
+
+    public List<PlanningMedecin> getPlanningMedecins() {
+        return planningMedecins;
+    }
+
+    public void setPlanningMedecins(List<PlanningMedecin> planningMedecins) {
+        this.planningMedecins = planningMedecins;
     }
 
     // Méthodes utilitaires

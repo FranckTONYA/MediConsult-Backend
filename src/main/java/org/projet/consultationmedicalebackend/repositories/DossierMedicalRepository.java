@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DossierMedicalRepository extends JpaRepository<DossierMedical, Long> {
-    Optional<DossierMedical> findByPatient(Patient patient);
+
+    @Query("SELECT p.dossierMedical FROM Patient p " +
+            "WHERE p.id = :patientId")
+    Optional<DossierMedical> findByPatient(Long patientId);
 
     @Query("SELECT dm FROM DossierMedical dm " +
             "JOIN dm.patient p " +

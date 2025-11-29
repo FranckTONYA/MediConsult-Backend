@@ -56,16 +56,13 @@ public class AuthenticationService {
         }
         patient.setMotDePasse(passwordEncoder.encode(patient.getMotDePasse()));
         patient.setRole(RoleUtilisateur.PATIENT);
-        Patient patientSaved = patientRepository.save(patient);
 
         // Créer le dossier médical associé au patient
         DossierMedical dossierMedical = new DossierMedical();
-        dossierMedical.setPatient(patientSaved);
-        dossierMedicalRepository.save(dossierMedical);
+        patient.setDossierMedical(dossierMedical); // Synchronisation bidirectionnelle via le setter
 
-        // Associer le dossier medical au patient
-        patientSaved.setDossierMedical(dossierMedical);
-        patientRepository.save(patientSaved);
+        // Sauvegarder uniquement le patient (cascade va persister le dossier)
+        Patient patientSaved = patientRepository.save(patient);
 
         CustomUserDetails userDetails = new CustomUserDetails(patientSaved);
 

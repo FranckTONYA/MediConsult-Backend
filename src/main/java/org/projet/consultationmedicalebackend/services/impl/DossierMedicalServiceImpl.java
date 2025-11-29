@@ -38,8 +38,7 @@ public class DossierMedicalServiceImpl implements DossierMedicalService {
 
     @Override
     public Optional<DossierMedical> findByPatient(Long patientId) {
-        Patient patient = patientRepository.findById(patientId).orElse(null);
-        return dossierMedicalRepository.findByPatient(patient);
+        return dossierMedicalRepository.findByPatient(patientId);
     }
 
     @Override

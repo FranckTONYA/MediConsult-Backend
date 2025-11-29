@@ -22,7 +22,6 @@ public class PlanningMedecin {
 
     @ManyToOne
     @JoinColumn(name = "medecin_id")
-//    @JsonBackReference
     @JsonIgnore
     private Medecin medecin;
 

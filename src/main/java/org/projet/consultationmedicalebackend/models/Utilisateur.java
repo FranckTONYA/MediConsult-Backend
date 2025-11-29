@@ -1,6 +1,10 @@
 package org.projet.consultationmedicalebackend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "UTILISATEUR")
@@ -36,6 +40,18 @@ public abstract class Utilisateur {
     @Column(nullable = false)
     private RoleUtilisateur role;
 
+    @OneToMany(mappedBy = "emetteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Message> messagesEnvoyes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "recepteur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Message> messagesRecus = new ArrayList<>();
+
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
+
     public Utilisateur() {
     }
 
@@ -48,6 +64,20 @@ public abstract class Utilisateur {
         this.email = email;
         this.motDePasse = motDePasse;
         this.role = role;
+    }
+
+    public Utilisateur(Long id, String nom, String prenom, Sexe sexe, String adresse, String telephone, String email, String motDePasse, RoleUtilisateur role, List<Message> messagesEnvoyes, List<Message> messagesRecus) {
+        this.id = id;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.sexe = sexe;
+        this.adresse = adresse;
+        this.telephone = telephone;
+        this.email = email;
+        this.motDePasse = motDePasse;
+        this.role = role;
+        this.messagesEnvoyes = messagesEnvoyes;
+        this.messagesRecus = messagesRecus;
     }
 
     public Long getId() {
@@ -120,5 +150,29 @@ public abstract class Utilisateur {
 
     public void setRole(RoleUtilisateur role) {
         this.role = role;
+    }
+
+    public List<Message> getMessagesEnvoyes() {
+        return messagesEnvoyes;
+    }
+
+    public void setMessagesEnvoyes(List<Message> messagesEnvoyes) {
+        this.messagesEnvoyes = messagesEnvoyes;
+    }
+
+    public List<Message> getMessagesRecus() {
+        return messagesRecus;
+    }
+
+    public void setMessagesRecus(List<Message> messagesRecus) {
+        this.messagesRecus = messagesRecus;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
     }
 }

@@ -24,7 +24,18 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Patient save(Patient patient) {
-        return patientRepository.save(patient);
+        Patient patientFound = patientRepository.findById(patient.getId()).get();
+        if (patientFound.getDossierMedical() == null) {
+            // Créer le dossier médical associé au patient
+            DossierMedical dossierMedical = new DossierMedical();
+//            dossierMedical.setPatient(patient);
+//            dossierMedicalRepository.save(dossierMedical);
+
+            // Associer le dossier medical au patient
+            patientFound.setDossierMedical(dossierMedical);
+        }
+
+        return patientRepository.save(patientFound);
     }
 
     @Override

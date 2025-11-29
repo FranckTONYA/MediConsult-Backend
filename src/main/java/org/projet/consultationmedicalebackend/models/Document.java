@@ -29,8 +29,7 @@ public class Document {
     @JsonBackReference(value = "ordonnance-documents")
     private Ordonnance ordonnance;
 
-    @OneToOne
-    @JoinColumn(name = "message_id")
+    @OneToOne(mappedBy = "document") // côté inverse
     @JsonBackReference
     private Message message;
 

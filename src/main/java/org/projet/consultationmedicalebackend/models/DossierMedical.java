@@ -28,9 +28,8 @@ public class DossierMedical {
     @ElementCollection
     private List<String> remarques;
 
-    @OneToOne
-    @JoinColumn(name = "patient_id")
-    @JsonManagedReference
+    @OneToOne(mappedBy = "dossierMedical")
+    @JsonBackReference
     private Patient patient;
 
     public DossierMedical() {

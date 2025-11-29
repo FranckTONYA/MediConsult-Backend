@@ -18,9 +18,9 @@ public class Patient extends Utilisateur{
     @Column(nullable = false)
     private Date dateNaissance;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "dossier_id")
-    @JsonBackReference
+    @JsonManagedReference
     private DossierMedical dossierMedical;
 
     @ManyToMany(mappedBy = "patients") // côté inverse de la relation

@@ -2,6 +2,7 @@ package org.projet.consultationmedicalebackend.services.impl;
 
 import org.projet.consultationmedicalebackend.models.DossierMedical;
 import org.projet.consultationmedicalebackend.models.Patient;
+import org.projet.consultationmedicalebackend.models.StatutConsentement;
 import org.projet.consultationmedicalebackend.repositories.DossierMedicalRepository;
 import org.projet.consultationmedicalebackend.repositories.PatientRepository;
 import org.projet.consultationmedicalebackend.services.DossierMedicalService;
@@ -43,7 +44,7 @@ public class DossierMedicalServiceImpl implements DossierMedicalService {
 
     @Override
     public List<DossierMedical> findByMedecin(Long medecinId) {
-        return dossierMedicalRepository.findbyMedecin(medecinId);
+        return dossierMedicalRepository.findByMedecinAndStatus(medecinId, StatutConsentement.ACCEPTER);
     }
 
     @Override

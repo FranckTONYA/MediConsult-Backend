@@ -23,10 +23,6 @@ public class Patient extends Utilisateur{
     @JsonManagedReference
     private DossierMedical dossierMedical;
 
-    @ManyToMany(mappedBy = "patients") // côté inverse de la relation
-    @JsonIgnore
-    private List<Medecin> medecins = new ArrayList<>();
-
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Consultation> consultations;
@@ -43,6 +39,10 @@ public class Patient extends Utilisateur{
     @JsonIgnore
     private List<Paiement> paiements = new ArrayList<>();
 
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Consentement> consentements = new ArrayList<>();
+
     public Patient() {
         super();
     }
@@ -52,7 +52,6 @@ public class Patient extends Utilisateur{
         this.niss = niss;
         this.dateNaissance = dateNaissance;
         this.dossierMedical = dossierMedical;
-        this.medecins = medecins;
         this.consultations = consultations;
     }
 
@@ -79,14 +78,6 @@ public class Patient extends Utilisateur{
 
     public void setDossierMedical(DossierMedical dossierMedical) {
         this.dossierMedical = dossierMedical;
-    }
-
-    public List<Medecin> getMedecins() {
-        return medecins;
-    }
-
-    public void setMedecins(List<Medecin> medecins) {
-        this.medecins = medecins;
     }
 
     public List<Consultation> getConsultations() {
@@ -120,5 +111,13 @@ public class Patient extends Utilisateur{
 
     public void setPaiements(List<Paiement> paiements) {
         this.paiements = paiements;
+    }
+
+    public List<Consentement> getConsentements() {
+        return consentements;
+    }
+
+    public void setConsentements(List<Consentement> consentements) {
+        this.consentements = consentements;
     }
 }

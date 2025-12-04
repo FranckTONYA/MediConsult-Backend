@@ -27,16 +27,6 @@ public class Medecin extends Utilisateur {
     @JsonIgnore
     private List<PlanningMedecin> plannings = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "medecin_patient", // nom de la table de jointure
-            joinColumns = @JoinColumn(name = "medecin_id"),  // clé étrangère vers Medecin
-            inverseJoinColumns = @JoinColumn(name = "patient_id") // clé étrangère vers Patient
-    )
-//    @JsonManagedReference(value = "medecin-patients")
-    @JsonIgnore
-    private List<Patient> patients = new ArrayList<>();
-
     @OneToMany(mappedBy = "medecin", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Ordonnance> ordonnances = new ArrayList<>();
@@ -49,6 +39,10 @@ public class Medecin extends Utilisateur {
     @JsonIgnore
     private List<PlanningMedecin> planningMedecins = new ArrayList<>();
 
+    @OneToMany(mappedBy = "medecin", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Consentement> consentements = new ArrayList<>();
+
     public Medecin() {
         super();
     }
@@ -59,7 +53,6 @@ public class Medecin extends Utilisateur {
         this.numINAMI = numINAMI;
         this.consultations = consultations;
         this.plannings = plannings;
-        this.patients = patients;
     }
 
     public String getSpecialite() {
@@ -94,14 +87,6 @@ public class Medecin extends Utilisateur {
         this.plannings = plannings;
     }
 
-    public List<Patient> getPatients() {
-        return patients;
-    }
-
-    public void setPatients(List<Patient> patients) {
-        this.patients = patients;
-    }
-
     public List<Ordonnance> getOrdonnances() {
         return ordonnances;
     }
@@ -126,14 +111,11 @@ public class Medecin extends Utilisateur {
         this.planningMedecins = planningMedecins;
     }
 
-    // Méthodes utilitaires
-    public void addPatient(Patient patient) {
-        patients.add(patient);
-        patient.getMedecins().add(this);
+    public List<Consentement> getConsentements() {
+        return consentements;
     }
 
-    public void removePatient(Patient patient) {
-        patients.remove(patient);
-        patient.getMedecins().remove(this);
+    public void setConsentements(List<Consentement> consentements) {
+        this.consentements = consentements;
     }
 }

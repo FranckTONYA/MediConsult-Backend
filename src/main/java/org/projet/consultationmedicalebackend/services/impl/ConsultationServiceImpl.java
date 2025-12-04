@@ -8,10 +8,12 @@ import org.projet.consultationmedicalebackend.repositories.PatientRepository;
 import org.projet.consultationmedicalebackend.repositories.PlanningMedecinRepository;
 import org.projet.consultationmedicalebackend.services.ConsultationService;
 import org.projet.consultationmedicalebackend.utils.CustomResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -123,6 +125,44 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         response.status = true;
         response.message = "Créneau réservé avec succcé";
+        return response;
+    }
+
+    @Override
+    public CustomResponse cancelOrRefuseConsultation(Long id, StatutRDV statut) {
+        CustomResponse response = new CustomResponse();
+        Optional<Consultation> opt = consultationRepository.findById(id);
+        if(opt.isEmpty()){
+            response.status = false;
+            response.message = "Consultation introuvable";
+        }
+
+        Consultation consultation = opt.get();
+
+
+        // Mettre à jour le statut
+        if (statut == StatutRDV.REFUSER )
+            consultation.setStatut(StatutRDV.REFUSER);
+        else
+            consultation.setStatut(StatutRDV.ANNULER);
+
+        consultationRepository.save(consultation);
+
+        // Restaurer le créneau réservé à DISPONIBLE
+        PlanningMedecin slot = planningMedecinRepo.findSlotContaining(
+                consultation.getMedecin().getId(),
+                consultation.getDebut(),
+                consultation.getFin(),
+                StatutPlanning.INDISPONIBLE
+        ).orElse(null);
+
+        if(slot != null){
+            slot.setStatut(StatutPlanning.DISPONIBLE);
+            planningMedecinRepo.save(slot);
+        }
+
+        response.status = true;
+        response.message = "Consultation annulée et créneau libéré";
         return response;
     }
 

@@ -1,11 +1,9 @@
 package org.projet.consultationmedicalebackend.services.impl;
 
-import org.projet.consultationmedicalebackend.models.Consultation;
-import org.projet.consultationmedicalebackend.models.Document;
-import org.projet.consultationmedicalebackend.models.Ordonnance;
-import org.projet.consultationmedicalebackend.models.TypeDoc;
+import org.projet.consultationmedicalebackend.models.*;
 import org.projet.consultationmedicalebackend.repositories.ConsultationRepository;
 import org.projet.consultationmedicalebackend.repositories.DocumentRepository;
+import org.projet.consultationmedicalebackend.repositories.DossierMedicalRepository;
 import org.projet.consultationmedicalebackend.repositories.OrdonnanceRepository;
 import org.projet.consultationmedicalebackend.services.DocumentService;
 import org.projet.consultationmedicalebackend.utils.CustomResponse;
@@ -26,12 +24,14 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final ConsultationRepository consultationRepository;
     private final OrdonnanceRepository ordonnanceRepository;
+    private final DossierMedicalRepository dossierMedicalRepository;
 
     public DocumentServiceImpl(DocumentRepository documentRepository, ConsultationRepository consultationRepository,
-                               OrdonnanceRepository ordonnanceRepository) {
+                               OrdonnanceRepository ordonnanceRepository, DossierMedicalRepository dossierMedicalRepository) {
         this.documentRepository = documentRepository;
         this.consultationRepository = consultationRepository;
         this.ordonnanceRepository = ordonnanceRepository;
+        this.dossierMedicalRepository = dossierMedicalRepository;
     }
 
     @Override
@@ -59,6 +59,12 @@ public class DocumentServiceImpl implements DocumentService {
     public List<Document> findByOrdonnance(Long ordonnanceId) {
         Ordonnance ordonnance = ordonnanceRepository.findById(ordonnanceId).orElse(null);
         return documentRepository.findByOrdonnance(ordonnance);
+    }
+
+    @Override
+    public List<Document> findByDossierMedical(Long dossierId) {
+        DossierMedical dossierMedical = dossierMedicalRepository.findById(dossierId).orElse(null);
+        return documentRepository.findByDossierMedical((dossierMedical));
     }
 
     @Override

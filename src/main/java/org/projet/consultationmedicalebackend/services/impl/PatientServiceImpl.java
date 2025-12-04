@@ -62,7 +62,6 @@ public class PatientServiceImpl implements PatientService {
         return patientRepository.findByDossierMedical_Id(dossierId);
     }
 
-
     @Override
     public void delete(Long id) {
         patientRepository.deleteById(id);

@@ -1,10 +1,7 @@
 package org.projet.consultationmedicalebackend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.projet.consultationmedicalebackend.models.Consultation;
-import org.projet.consultationmedicalebackend.models.Document;
-import org.projet.consultationmedicalebackend.models.StatutRDV;
-import org.projet.consultationmedicalebackend.models.TypeDoc;
+import org.projet.consultationmedicalebackend.models.*;
 import org.projet.consultationmedicalebackend.services.ConsultationService;
 import org.projet.consultationmedicalebackend.services.DocumentService;
 import org.projet.consultationmedicalebackend.services.FileStorageService;
@@ -45,6 +42,36 @@ public class ConsultationController {
             return ResponseEntity.ok(Map.of("message", response.message));
         else
             return ResponseEntity.badRequest().body(Map.of("error", response.message));
+    }
+
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelConsultation(@PathVariable Long id) {
+        try {
+            CustomResponse response = consultationService.cancelOrRefuseConsultation(id, StatutRDV.ANNULER);
+            if (response.status)
+                return ResponseEntity.ok(Map.of("message", response.message));
+            else
+                return ResponseEntity.badRequest().body(Map.of("error", response.message));
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur :" + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/refuse/{id}")
+    public ResponseEntity<?> refuseConsultation(@PathVariable Long id) {
+        try {
+            CustomResponse response = consultationService.cancelOrRefuseConsultation(id, StatutRDV.REFUSER);
+            if (response.status)
+                return ResponseEntity.ok(Map.of("message", response.message));
+            else
+                return ResponseEntity.badRequest().body(Map.of("error", response.message));
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur serveur :" + e.getMessage()));
+        }
     }
 
     @GetMapping("/getAll")

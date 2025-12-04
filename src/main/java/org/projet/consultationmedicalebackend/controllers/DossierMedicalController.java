@@ -1,12 +1,18 @@
 package org.projet.consultationmedicalebackend.controllers;
 
-import org.projet.consultationmedicalebackend.models.DossierMedical;
-import org.projet.consultationmedicalebackend.services.DossierMedicalService;
+import org.projet.consultationmedicalebackend.models.*;
+import org.projet.consultationmedicalebackend.services.*;
+import org.projet.consultationmedicalebackend.utils.CustomResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -16,6 +22,15 @@ public class DossierMedicalController {
 
     @Autowired
     private DossierMedicalService dossierMedicalService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private DocumentService documentService;
+
+    @Autowired
+    private PatientService patientService;
 
     @PostMapping
     public ResponseEntity<DossierMedical> createDossier(@RequestBody DossierMedical dossier) {
@@ -53,9 +68,79 @@ public class DossierMedicalController {
         return dossierMedicalService.save(dossierMedical);
     }
 
+    @PutMapping(value = "/update-with-files/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateWithFiles(
+            @PathVariable Long id,
+            @RequestPart("dossierMedical") DossierMedical dossierMedical,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    ) {
+        try {
+            DossierMedical dossierFound = dossierMedicalService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Dossier médical non trouvée"));
+
+            // Mise à jour
+            dossierFound.setDate(LocalDateTime.now());
+            dossierMedicalService.save(dossierFound);
+
+            // Sauvegarde des fichiers
+            if (files != null) {
+                for (MultipartFile file : files) {
+
+                    if (file.isEmpty()) continue;
+
+                    String folder = "/uploads-dossiersMedicaux/";
+
+                    CustomResponse response = fileStorageService.saveFile(file, folder);
+
+                    if(!response.status)
+                        return ResponseEntity.badRequest().body(Map.of("error", response.message));
+
+                    String generatedName = response.message;
+
+                    TypeDoc type = fileStorageService.detectFileType(file);
+
+                    Document doc = new Document(
+                            generatedName,
+                            type,
+                            generatedName,
+                            dossierFound
+                    );
+                    documentService.save(doc);
+                }
+            }
+            return ResponseEntity.ok(Map.of("message", "Dossier médical mise à jour avec succès"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body((Map.of("error", "Erreur serveur :" + e.getMessage())));
+        }
+    }
+
     @DeleteMapping("/delete-by-id/{id}")
-    public ResponseEntity<Void> deleteDossier(@PathVariable Long id) {
-        dossierMedicalService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        Optional<DossierMedical> dossierOpt = dossierMedicalService.findById(id);
+
+        if (dossierOpt.isPresent()) {
+            DossierMedical dossierMedical = dossierOpt.get();
+
+            // Suppression des documents liés
+            if (dossierMedical.getDocuments() != null) {
+                for (Document doc : dossierMedical.getDocuments()) {
+                    // Supprime le fichier physique
+                    File f = new File(System.getProperty("user.dir") + "/uploads-dossiersMedicaux/" + doc.getUrlStockage());
+                    if (f.exists()) f.delete();
+
+                    // Supprime l'enregistrement en DB
+                    documentService.delete(doc.getId());
+                }
+            }
+
+            // Supprime l'ordonnance
+            dossierMedicalService.delete(id);
+
+            return ResponseEntity.ok(Map.of("message", "Dossier médical et ses documents supprimés avec succès"));
+        } else {
+            return ResponseEntity.status(404).body(Map.of("error", "Dossier médical introuvable"));
+        }
     }
 }

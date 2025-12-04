@@ -59,6 +59,7 @@ public class AuthenticationService {
 
         // Créer le dossier médical associé au patient
         DossierMedical dossierMedical = new DossierMedical();
+        dossierMedical.setDate(LocalDateTime.now());
         patient.setDossierMedical(dossierMedical); // Synchronisation bidirectionnelle via le setter
 
         // Sauvegarder uniquement le patient (cascade va persister le dossier)

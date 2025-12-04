@@ -63,31 +63,4 @@ public class MedecinController {
         medecinService.delete(id);
     }
 
-    @PostMapping("/assign-patient")
-    public ResponseEntity<?> assignPatientToMedecin(@RequestBody Map<String, Long> ids) {
-        Long medecinId = ids.get("medecinId");
-        Long patientId = ids.get("patientId");
-        CustomResponse response = medecinService.assignPatientToMedecin(medecinId, patientId);
-        if (response.status)
-            return ResponseEntity.ok(Map.of("message", response.message));
-        else
-            return ResponseEntity.badRequest().body(Map.of("error", response.message));
-    }
-
-    @DeleteMapping("/remove-patient/{medecinId}/{patientId}")
-    public ResponseEntity<?> removePatientFromMedecin(@PathVariable Long medecinId, @PathVariable Long patientId) {
-        CustomResponse response = medecinService.removePatientFromMedecin(medecinId, patientId);
-        if (response.status)
-            return ResponseEntity.ok(Map.of("message", response.message));
-        else
-            return ResponseEntity.badRequest().body(Map.of("error", response.message));
-    }
-
-    @GetMapping("/get-patients-of-medecin/{medecinId}")
-    public List<Patient> getPatientsOfMedecin(@PathVariable Long medecinId) {
-        Medecin medecin = medecinService.findById(medecinId)
-                .orElseThrow(() -> new RuntimeException("Médecin non trouvé"));
-
-        return medecin.getPatients();
-    }
 }

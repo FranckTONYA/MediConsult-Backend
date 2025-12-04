@@ -14,6 +14,4 @@ public interface MedecinService {
     Optional<Medecin> findByEmail(String email);
     List<Medecin> findBySpecialite(String specialite);
     void delete(Long id);
-    CustomResponse assignPatientToMedecin(Long medecinId, Long patientId);
-    CustomResponse removePatientFromMedecin(Long medecinId, Long patientId);
 }

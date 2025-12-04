@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -13,6 +15,9 @@ public class DossierMedical {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private LocalDateTime date;
 
     private String groupeSanguin;
 
@@ -31,6 +36,10 @@ public class DossierMedical {
     @OneToOne(mappedBy = "dossierMedical")
     @JsonBackReference
     private Patient patient;
+
+    @OneToMany(mappedBy = "dossierMedical", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "dossierMedical-documents")
+    private List<Document> documents;
 
     public DossierMedical() {
     }
@@ -98,5 +107,21 @@ public class DossierMedical {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public List<Document> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(List<Document> documents) {
+        this.documents = documents;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 }

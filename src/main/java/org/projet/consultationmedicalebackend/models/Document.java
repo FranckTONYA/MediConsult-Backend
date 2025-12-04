@@ -33,6 +33,11 @@ public class Document {
     @JsonBackReference
     private Message message;
 
+    @ManyToOne
+    @JoinColumn(name = "dossierMedical_id")
+    @JsonBackReference(value = "dossierMedical-documents")
+    private DossierMedical dossierMedical;
+
     public Document() {
     }
 
@@ -55,6 +60,13 @@ public class Document {
         this.type = type;
         this.urlStockage = urlStockage;
         this.message = message;
+    }
+
+    public Document(String nom, TypeDoc type, String urlStockage, DossierMedical dossierMedical) {
+        this.nom = nom;
+        this.type = type;
+        this.urlStockage = urlStockage;
+        this.dossierMedical = dossierMedical;
     }
 
     public Long getId() {
@@ -111,5 +123,13 @@ public class Document {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public DossierMedical getDossierMedical() {
+        return dossierMedical;
+    }
+
+    public void setDossierMedical(DossierMedical dossierMedical) {
+        this.dossierMedical = dossierMedical;
     }
 }

@@ -14,6 +14,7 @@ public interface DocumentService {
     Optional<Document> findById(Long id);
     List<Document> findByConsultation(Long consultationId);
     List<Document> findByOrdonnance(Long ordonnanceId);
+    List<Document> findByDossierMedical(Long dossierId);
     void delete(Long id);
     CustomResponse uploadConsultationFiles(List<MultipartFile> file, Consultation consultation);
 }

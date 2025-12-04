@@ -15,9 +15,13 @@ public interface DossierMedicalRepository extends JpaRepository<DossierMedical, 
             "WHERE p.id = :patientId")
     Optional<DossierMedical> findByPatient(Long patientId);
 
-    @Query("SELECT dm FROM DossierMedical dm " +
-            "JOIN dm.patient p " +
-            "JOIN p.medecins m " +
-            "WHERE m.id = :medecinId")
-    List<DossierMedical> findbyMedecin(@Param("medecinId") Long medecinId);
+    @Query("""
+        SELECT p.dossierMedical 
+        FROM Patient p
+        JOIN p.consentements c
+        WHERE c.medecin.id = :medecinId
+          AND c.statut = :status
+    """)
+    List<DossierMedical> findByMedecinAndStatus(@Param("medecinId") Long medecinId, @Param("status")StatutConsentement status);
+
 }

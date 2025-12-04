@@ -55,12 +55,4 @@ public class PatientController {
         patientService.delete(id);
     }
 
-    @GetMapping("/get-medecins-of-patient/{patientId}")
-    public List<Medecin> getMedecinsOfPatient(@PathVariable Long patientId) {
-        Patient patient = patientService.findById(patientId)
-                .orElseThrow(() -> new RuntimeException("Patient non trouvé"));
-
-        return patient.getMedecins();
-    }
-
 }

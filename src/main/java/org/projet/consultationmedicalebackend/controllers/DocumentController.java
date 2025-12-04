@@ -61,6 +61,11 @@ public class DocumentController {
         return documentService.findByOrdonnance(ordonnanceId);
     }
 
+    @GetMapping("/find-by-dossierMedical/{dossierId}")
+    public List<Document> getByDossierMedical(@PathVariable Long dossierId) {
+        return documentService.findByDossierMedical(dossierId);
+    }
+
     @PostMapping
     public Document create(@RequestBody Document document) {
         return documentService.save(document);
@@ -117,6 +122,25 @@ public class DocumentController {
         Optional<Document> documentOpt =  documentService.findById(id);
         if(documentOpt.isPresent()) {
             File f = new File(System.getProperty("user.dir") + "/uploads-messages/" + documentOpt.get().getUrlStockage());
+            if (f.exists()) f.delete();
+
+            documentService.delete(id);
+            customResponse.status = true;
+            customResponse.message ="Document supprimé";
+            return ResponseEntity.ok( Map.of("message", customResponse.message));
+        }else {
+            customResponse.status = false;
+            customResponse.message = "Document introuvable";
+            return ResponseEntity.badRequest().body(Map.of("error", customResponse.message));
+        }
+    }
+
+    @DeleteMapping("/delete-dossierMedical-file/{id}")
+    public ResponseEntity<?> deleteDossierMedicalFile(@PathVariable Long id) {
+        CustomResponse customResponse = new CustomResponse();
+        Optional<Document> documentOpt =  documentService.findById(id);
+        if(documentOpt.isPresent()) {
+            File f = new File(System.getProperty("user.dir") + "/uploads-dossiersMedicaux/" + documentOpt.get().getUrlStockage());
             if (f.exists()) f.delete();
 
             documentService.delete(id);
@@ -189,6 +213,33 @@ public class DocumentController {
     public ResponseEntity<?> getMessageFile(@PathVariable String fileName) {
         try {
             File file = new File(System.getProperty("user.dir") + "/uploads-messages/" + fileName);
+
+            if (!file.exists())
+                return ResponseEntity.badRequest().body(Map.of("error", "Document introuvable"));
+
+            Path path = file.toPath();
+            Resource resource = new UrlResource(path.toUri());
+
+            // Détection automatique du type MIME
+            String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "application/octet-stream"; // fallback
+            }
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline; filename=\"" + fileName + "\"")
+                    .header("Content-Type", contentType)
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/get-dossierMedical-file/{fileName}")
+    public ResponseEntity<?> getDossierMedicalFile(@PathVariable String fileName) {
+        try {
+            File file = new File(System.getProperty("user.dir") + "/uploads-dossiersMedicaux/" + fileName);
 
             if (!file.exists())
                 return ResponseEntity.badRequest().body(Map.of("error", "Document introuvable"));

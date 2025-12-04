@@ -1,6 +1,7 @@
 package org.projet.consultationmedicalebackend.services;
 
 import org.projet.consultationmedicalebackend.models.Consultation;
+import org.projet.consultationmedicalebackend.models.StatutRDV;
 import org.projet.consultationmedicalebackend.utils.CustomResponse;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface ConsultationService {
     List<Consultation> findByPatient(Long patientId);
     List<Consultation> findByMedecin(Long medecinId);
     CustomResponse createConsultation(Consultation consultation);
+    CustomResponse cancelOrRefuseConsultation(Long id, StatutRDV statut);
 }

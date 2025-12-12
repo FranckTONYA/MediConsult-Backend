@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -61,7 +63,8 @@ public class AuthenticationService {
 
         // Créer le dossier médical associé au patient
         DossierMedical dossierMedical = new DossierMedical();
-        dossierMedical.setDate(LocalDateTime.now());
+        ZonedDateTime nowInBelgium = ZonedDateTime.now(ZoneId.of("Europe/Brussels"));
+        dossierMedical.setDate(nowInBelgium.toLocalDateTime());
         patient.setDossierMedical(dossierMedical); // Synchronisation bidirectionnelle via le setter
 
         // Sauvegarder uniquement le patient (cascade va persister le dossier)
@@ -186,6 +189,7 @@ public class AuthenticationService {
 
         // 3. Construire les claims du JWT (ne pas inclure d'informations sensibles non chiffrées)
         Map<String, Object> claims = new HashMap<>();
+        ZonedDateTime nowInBelgium = ZonedDateTime.now(ZoneId.of("Europe/Brussels"));
         claims.put("niss", patient.getNiss());
         claims.put("dateNaissance", patient.getDateNaissance());
         claims.put("nom", patient.getNom());
@@ -197,7 +201,7 @@ public class AuthenticationService {
         claims.put("pwd", encryptedPassword); // mot de passe chiffré
         claims.put("role", RoleUtilisateur.PATIENT.name());
         claims.put("code", code);
-        claims.put("ts", LocalDateTime.now().toString());
+        claims.put("ts", nowInBelgium.toLocalDateTime().toString());
 
         // 4. Générer le JWT de vérification (court TTL configuré)
         String verificationJwt = jwtService.generateVerificationToken(claims);

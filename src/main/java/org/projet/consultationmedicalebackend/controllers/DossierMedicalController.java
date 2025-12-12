@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -79,8 +81,14 @@ public class DossierMedicalController {
                     .orElseThrow(() -> new RuntimeException("Dossier médical non trouvée"));
 
             // Mise à jour
-            dossierFound.setDate(LocalDateTime.now());
-            dossierMedicalService.save(dossierFound);
+            ZonedDateTime nowInBelgium = ZonedDateTime.now(ZoneId.of("Europe/Brussels"));
+            dossierMedical.setDate(nowInBelgium.toLocalDateTime());
+
+            dossierMedical.setId(dossierFound.getId());
+            dossierMedical.setPatient(dossierFound.getPatient());
+            dossierMedical.setDocuments(dossierFound.getDocuments());
+
+            dossierMedicalService.save(dossierMedical);
 
             // Sauvegarde des fichiers
             if (files != null) {
@@ -103,7 +111,7 @@ public class DossierMedicalController {
                             generatedName,
                             type,
                             generatedName,
-                            dossierFound
+                            dossierMedical
                     );
                     documentService.save(doc);
                 }

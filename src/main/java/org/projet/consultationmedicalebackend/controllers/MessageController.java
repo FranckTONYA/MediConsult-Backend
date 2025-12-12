@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,7 +105,9 @@ public class MessageController {
             message.setContenu(contenu);
             message.setEmetteur(emetteur);
             message.setRecepteur(recepteur);
-            message.setDateEnvoi(LocalDateTime.now());
+
+            ZonedDateTime nowInBelgium = ZonedDateTime.now(ZoneId.of("Europe/Brussels"));
+            message.setDateEnvoi(nowInBelgium.toLocalDateTime());
 
             Message messageSaved = messageService.save(message);
 

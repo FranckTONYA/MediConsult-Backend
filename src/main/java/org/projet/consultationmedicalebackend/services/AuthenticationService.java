@@ -46,7 +46,7 @@ public class AuthenticationService {
         this.aesUtil = aesUtil;
     }
 
-    public CustomResponse registerPatient(Patient patient) {
+    public CustomResponse registerPatient(Patient patient, boolean modeAdmin) {
         CustomResponse response = new CustomResponse();
         // vérifier si l'email existe déjà
         if (utilisateurRepository.findByEmail(patient.getEmail()).isPresent()){
@@ -54,6 +54,8 @@ public class AuthenticationService {
             response.message = "Cet e-mail existe déjà";
             return response;
         }
+        String plainPassword = patient.getMotDePasse();
+
         patient.setMotDePasse(passwordEncoder.encode(patient.getMotDePasse()));
         patient.setRole(RoleUtilisateur.PATIENT);
 
@@ -64,6 +66,20 @@ public class AuthenticationService {
 
         // Sauvegarder uniquement le patient (cascade va persister le dossier)
         Patient patientSaved = patientRepository.save(patient);
+
+        if(modeAdmin){
+            // --- ENVOI EMAIL lorsque c'est un admin qui éffectue l'inscription ---
+            String html = buildAccountCreationEmail(
+                    patientSaved.getPrenom(),
+                    "Patient",
+                    patientSaved.getEmail(),
+                    plainPassword
+            );
+            emailService.envoyerEmail(patientSaved.getEmail(),
+                    "Votre compte patient MediConsult",
+                    html);
+        }
+
 
         CustomUserDetails userDetails = new CustomUserDetails(patientSaved);
 
@@ -81,9 +97,23 @@ public class AuthenticationService {
             response.message = "Cet e-mail existe déjà";
             return response;
         }
+        String plainPassword = medecin.getMotDePasse();
+
         medecin.setMotDePasse(passwordEncoder.encode(medecin.getMotDePasse()));
         medecin.setRole(RoleUtilisateur.MEDECIN);
-        medecinRepository.save(medecin);
+        Medecin saved = medecinRepository.save(medecin);
+
+        // --- ENVOI EMAIL ---
+        String html = buildAccountCreationEmail(
+                saved.getPrenom(),
+                "Médecin",
+                saved.getEmail(),
+                plainPassword
+        );
+        emailService.envoyerEmail(saved.getEmail(),
+                "Votre compte médecin MediConsult",
+                html);
+
         CustomUserDetails userDetails = new CustomUserDetails(medecin);
 
         response.status = true;
@@ -100,9 +130,23 @@ public class AuthenticationService {
             response.message = "Cet e-mail existe déjà";
             return response;
         }
+        String plainPassword = admin.getMotDePasse();
+
         admin.setMotDePasse(passwordEncoder.encode(admin.getMotDePasse()));
         admin.setRole(RoleUtilisateur.ADMINISTRATEUR);
-        administrateurRepository.save(admin);
+        Administrateur saved = administrateurRepository.save(admin);
+
+        // --- ENVOI EMAIL ---
+        String html = buildAccountCreationEmail(
+                saved.getPrenom(),
+                "Administrateur",
+                saved.getEmail(),
+                plainPassword
+        );
+        emailService.envoyerEmail(saved.getEmail(),
+                "Votre compte administrateur MediConsult",
+                html);
+
         CustomUserDetails userDetails = new CustomUserDetails(admin);
 
         response.status = true;
@@ -218,7 +262,7 @@ public class AuthenticationService {
         patient.setTelephone(telephone);
         patient.setRole(RoleUtilisateur.PATIENT);
 
-        return registerPatient(patient);
+        return registerPatient(patient, false);
     }
 
     public CustomResponse startPasswordReset(String email) {
@@ -299,7 +343,7 @@ public class AuthenticationService {
         sb.append("<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\">")
                 .append("<title>Code Vérification</title></head><body>");
 
-        sb.append("<div style=\"font-family:Arial,sans-serif;background:#f5f7fa;padding:20px\">");
+        sb.append("<div style=\"font-size:16px; font-family:Arial,sans-serif;background:#f5f7fa;padding:20px\">");
 
         sb.append("<div style=\"max-width:520px;margin:auto;background:#ffffff;")
                 .append("padding:30px;border-radius:10px;\">");
@@ -324,6 +368,101 @@ public class AuthenticationService {
         sb.append("</div></div></body></html>");
 
         return sb.toString();
+    }
+
+    // Demande d'inscription d'un médecin
+    public void doctorRequestRegistration(DoctorRegistrationRequestDTO requestDto) {
+
+        String html = """
+        <div style="font-family:Arial;padding:20px;background:#f3f6fa">
+          <div style="max-width:600px;margin:auto;background:white;padding:20px;border-radius:10px">
+            <h1 style="color:#0d6efd;text-align:center">Nouvelle demande d'inscription médecin</h1>
+            <p style="font-size:16px">Un médecin souhaite rejoindre la plateforme MediConsult.</p>
+
+            <h2 style="color:#0d6efd">Informations</h2>
+            <div style="font-size:16px">
+                <p><b>Nom :</b> %s</p>
+                <p><b>Prénom :</b> %s</p>
+                <p><b>Email :</b> %s</p>
+                <p><b>Téléphone :</b> %s</p>
+                <p><b>Spécialité :</b> %s</p>
+            </div>
+
+            <h2 style="color:#0d6efd">Présentation</h2>
+            <p style="font-size:16px">%s</p>
+
+            <br>
+              Email envoyé automatiquement par MediConsult.
+            </p>
+          </div>
+        </div>
+        """.formatted(
+                requestDto.getNom(),
+                requestDto.getPrenom(),
+                requestDto.getEmail(),
+                requestDto.getTelephone(),
+                requestDto.getSpecialite(),
+                requestDto.getPresentation()
+        );
+
+        emailService.envoyerEmail("mediconsultorg@gmail.com", "Nouvelle demande d'inscription médecin", html);
+    }
+
+
+    private String buildAccountCreationEmail(String prenom, String role, String login, String password) {
+
+        String safePrenom = StringEscapeUtils.escapeHtml4(prenom);
+        String safeRole = StringEscapeUtils.escapeHtml4(role);
+        String safeLogin = StringEscapeUtils.escapeHtml4(login);
+        String safePassword = StringEscapeUtils.escapeHtml4(password);
+
+        return """
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Compte créé - MediConsult</title>
+    </head>
+
+    <body style="background:#f5f7fa; font-family:Arial, sans-serif; padding:20px;">
+    
+    <div style="max-width:600px; margin:auto; background:#ffffff; padding:30px; border-radius:12px;">
+        
+        <h1 style="text-align:center; color:#2563eb;">🎉 Votre compte MediConsult a été créé</h1>
+    
+        <p style="font-size:16px;">Bonjour %s,</p>
+    
+        <p style="font-size:16px;">
+            Nous avons le plaisir de vous informer que votre compte a bien été créé sur la plateforme
+            <b>MediConsult</b>.
+        </p>
+    
+        <h2 style="color:#2563eb;">🔎 Détails de votre compte</h2>
+    
+        <div style="background:#f1f5f9; padding:15px; border-radius:8px; font-size:16px;">
+            <p><b>Type de compte :</b> %s</p>
+            <p><b>Identifiant (email) :</b> %s</p>
+            <p><b>Mot de passe :</b> <span style="color:#dc2626;">%s</span></p>
+        </div>
+    
+        <br />
+    
+        <p style="font-size:15px; color:#334155;">
+            🔐 <b>Important :</b><br>
+            Pour votre sécurité, nous vous recommandons fortement de changer votre mot de passe lors de votre première connexion.
+        </p>
+    
+        <br />
+    
+        <p style="text-align:center; font-size:14px; color:#64748b;">
+            Merci d'utiliser MediConsult.<br>
+            Ceci est un email automatique, merci de ne pas y répondre.
+        </p>
+    
+    </div>
+    </body>
+    </html>
+    """.formatted(safePrenom, safeRole, safeLogin, safePassword);
     }
 
 }

@@ -1,10 +1,7 @@
 package org.projet.consultationmedicalebackend.controllers;
 
 
-import org.projet.consultationmedicalebackend.models.Administrateur;
-import org.projet.consultationmedicalebackend.models.Medecin;
-import org.projet.consultationmedicalebackend.models.Patient;
-import org.projet.consultationmedicalebackend.models.RoleUtilisateur;
+import org.projet.consultationmedicalebackend.models.*;
 import org.projet.consultationmedicalebackend.services.AuthenticationService;
 import org.projet.consultationmedicalebackend.utils.CustomResponse;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +46,7 @@ public class AuthenticationController {
 
     @PostMapping("/register/patient")
     public ResponseEntity<?> registerPatient(@RequestBody Patient patient) {
-        CustomResponse response = authenticationService.registerPatient(patient);
+        CustomResponse response = authenticationService.registerPatient(patient, true);
         if (response.status)
             return ResponseEntity.ok(Map.of("token", response.message, "role", RoleUtilisateur.PATIENT.name()));
         else
@@ -85,6 +82,12 @@ public class AuthenticationController {
         } else {
             return ResponseEntity.status(401).body(Map.of("error", "Email ou mot de passe incorrect"));
         }
+    }
+
+    @PostMapping("/doctor-request-registration")
+    public ResponseEntity<?> requestRegistration(@RequestBody DoctorRegistrationRequestDTO requestDto) {
+        authenticationService.doctorRequestRegistration(requestDto);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/password/reset")

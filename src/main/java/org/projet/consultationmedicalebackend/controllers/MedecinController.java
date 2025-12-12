@@ -1,5 +1,6 @@
 package org.projet.consultationmedicalebackend.controllers;
 
+import org.projet.consultationmedicalebackend.models.DoctorRegistrationRequestDTO;
 import org.projet.consultationmedicalebackend.models.Medecin;
 import org.projet.consultationmedicalebackend.models.Patient;
 import org.projet.consultationmedicalebackend.services.MedecinService;

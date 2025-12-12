@@ -7,6 +7,7 @@ import org.projet.consultationmedicalebackend.repositories.MedecinRepository;
 import org.projet.consultationmedicalebackend.repositories.PatientRepository;
 import org.projet.consultationmedicalebackend.repositories.PlanningMedecinRepository;
 import org.projet.consultationmedicalebackend.services.ConsultationService;
+import org.projet.consultationmedicalebackend.services.EmailService;
 import org.projet.consultationmedicalebackend.utils.CustomResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,19 +25,36 @@ public class ConsultationServiceImpl implements ConsultationService {
     private final PatientRepository patientRepository;
     private final MedecinRepository medecinRepository;
     private final PlanningMedecinRepository planningMedecinRepo;
+    private final EmailService emailService;
 
     public ConsultationServiceImpl(ConsultationRepository consultationRepository,
                                    PatientRepository patientRepository, MedecinRepository medecinRepository,
-                                   PlanningMedecinRepository planningMedecinRepo) {
+                                   PlanningMedecinRepository planningMedecinRepo, EmailService emailService) {
         this.consultationRepository = consultationRepository;
         this.patientRepository = patientRepository;
         this.medecinRepository = medecinRepository;
         this.planningMedecinRepo = planningMedecinRepo;
+        this.emailService = emailService;
     }
 
     @Override
     public Consultation save(Consultation consultation) {
-        return consultationRepository.save(consultation);
+        consultation = consultationRepository.save(consultation);
+        // Envoi de mail au patient
+        String htmlContent1 = buildConsultationEmail(consultation,
+                "Mise à jour de votre consultation", RoleUtilisateur.PATIENT);
+        emailService.envoyerEmail(consultation.getPatient().getEmail(),
+                "Mise à jour de votre consultation - MediConsult",
+                htmlContent1);
+
+        // Envoi de mail au médecin
+        String htmlContent2 = buildConsultationEmail(consultation,
+                "Mise à jour de votre consultation", RoleUtilisateur.MEDECIN);
+        emailService.envoyerEmail(consultation.getMedecin().getEmail(),
+                "Mise à jour de votre consultation - MediConsult",
+                htmlContent2);
+
+        return consultation;
     }
 
     @Override
@@ -123,6 +141,20 @@ public class ConsultationServiceImpl implements ConsultationService {
 
         consultationRepository.save(consultation);
 
+        // Envoi de mail au patient
+        String htmlContent1 = buildConsultationEmail(consultation,
+                "Nouvelle consultation", RoleUtilisateur.PATIENT);
+        emailService.envoyerEmail(consultation.getPatient().getEmail(),
+                "Nouvelle consultation - MediConsult",
+                htmlContent1);
+
+        // Envoi de mail au médecin
+        String htmlContent2 = buildConsultationEmail(consultation,
+                "Nouvelle consultation", RoleUtilisateur.MEDECIN);
+        emailService.envoyerEmail(consultation.getMedecin().getEmail(),
+                "Nouvelle consultation - MediConsult",
+                htmlContent2);
+
         response.status = true;
         response.message = "Créneau réservé avec succcé";
         return response;
@@ -141,10 +173,16 @@ public class ConsultationServiceImpl implements ConsultationService {
 
 
         // Mettre à jour le statut
-        if (statut == StatutRDV.REFUSER )
+        if (statut == StatutRDV.REFUSER ){
             consultation.setStatut(StatutRDV.REFUSER);
-        else
+            response.message = "Consultation refusée et créneau libéré";
+        }
+
+        else{
             consultation.setStatut(StatutRDV.ANNULER);
+            response.message = "Consultation annulée et créneau libéré";
+        }
+
 
         consultationRepository.save(consultation);
 
@@ -161,9 +199,124 @@ public class ConsultationServiceImpl implements ConsultationService {
             planningMedecinRepo.save(slot);
         }
 
+        // Envoi de mail au patient
+        String htmlContent1 = buildConsultationEmail(consultation,
+                "Mise à jour de votre consultation", RoleUtilisateur.PATIENT);
+        emailService.envoyerEmail(
+                consultation.getPatient().getEmail(),
+                "Mise à jour de votre consultation - MediConsult",
+                htmlContent1
+        );
+
+        // Envoi de mail au médecin
+        String htmlContent2 = buildConsultationEmail(consultation,
+                "Mise à jour de votre consultation", RoleUtilisateur.MEDECIN);
+        emailService.envoyerEmail(
+                consultation.getMedecin().getEmail(),
+                "Mise à jour de votre consultation - MediConsult",
+                htmlContent2
+        );
+
         response.status = true;
-        response.message = "Consultation annulée et créneau libéré";
         return response;
+    }
+
+    private String buildConsultationEmail(Consultation consultation, String header, RoleUtilisateur role) {
+        Patient patient = patientRepository.findById(consultation.getPatient().getId()).orElse(null);
+        Medecin medecin = medecinRepository.findById(consultation.getMedecin().getId()).orElse(null);
+        consultation.setPatient(patient);
+        consultation.setMedecin(medecin);
+
+        String prenomDestinataire;
+        String lienVisioHtml = "";
+
+        // Lien Visio seulement si statut CONFIRMER
+        if (consultation.getStatut() == StatutRDV.CONFIRMER && consultation.getLienReunion() != null) {
+            lienVisioHtml = "<p><b>Lien Visio :</b> <a href=\"" + consultation.getLienReunion()
+                    + "\" style=\"color:#0d6efd;\">Rejoindre la consultation</a></p>";
+        }
+
+        if (role == RoleUtilisateur.PATIENT) {
+            prenomDestinataire = patient.getPrenom();
+        } else if (role == RoleUtilisateur.MEDECIN) {
+            prenomDestinataire = medecin.getPrenom();
+        } else {
+            prenomDestinataire = "Utilisateur";
+        }
+
+        String infosHtml = role == RoleUtilisateur.PATIENT
+                ? "<b>Médecin : </b>" + medecin.getNom() + " " + medecin.getPrenom()
+                : "<b>Patient : </b>" + patient.getNom() + " " + patient.getPrenom();
+
+
+        String dateDebut = consultation.getDebut().toString().replace("T", " ");
+        String dateFin = consultation.getFin().toString().replace("T", " ");
+        String statutTexte = getStatutTexte(consultation.getStatut());
+
+        // Compte rendu si disponible
+        String compteRenduHtml = "";
+        if (consultation.getCompteRendu() != null && !consultation.getCompteRendu().isEmpty()) {
+            compteRenduHtml = "<p><b>Compte rendu :</b> " + consultation.getCompteRendu() + "</p>";
+        }
+
+        return """
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Notification Consultation</title>
+        </head>
+        <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f7fa;">
+            <div style="max-width:600px;margin:auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+                
+                <!-- Header -->
+                <div style="background:#0d6efd;color:white;padding:20px;text-align:center;">
+                    <h1 style="margin:0;font-size:24px;">%s</h1>
+                </div>
+                
+                <!-- Body -->
+                <div style="padding:20px;color:#333;font-size:16px;">
+                    <p>Bonjour %s,</p>
+                    <p>La demande de consultation est <b>%s</b>.</p>
+                    <br/>
+                    <h3 style="color:#0d6efd;">Détails de la consultation</h3>
+                    <p>%s</p>
+                    <p><b>Date & Heure :</b> %s - %s</p>
+                    
+                    %s
+                    %s
+                </div>
+                
+                <!-- Footer -->
+                <div style="background:#f0f0f0;color:#64748b;padding:15px;text-align:center;font-size:14px;">
+                    <p>Ceci est un email automatique de MediConsult. Merci de ne pas répondre à ce message.</p>
+                    <p>Vous pouvez consulter la plateforme pour plus de détails.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(
+                header,
+                prenomDestinataire,
+                statutTexte,
+                infosHtml,
+                dateDebut,
+                dateFin,
+                lienVisioHtml,
+                compteRenduHtml
+        );
+    }
+
+
+    private String getStatutTexte(StatutRDV statut) {
+        return switch (statut) {
+            case EN_ATTENTE -> "en attente";
+            case CONFIRMER -> "confirmée";
+            case REFUSER -> "refusée";
+            case ANNULER -> "annulée";
+            case TERMINER -> "terminée";
+            default -> "inconnue";
+        };
     }
 
 }

@@ -1,11 +1,11 @@
 package org.projet.consultationmedicalebackend.services.impl;
 
+import org.projet.consultationmedicalebackend.models.DoctorRegistrationRequestDTO;
 import org.projet.consultationmedicalebackend.models.Medecin;
-import org.projet.consultationmedicalebackend.models.Patient;
 import org.projet.consultationmedicalebackend.repositories.MedecinRepository;
 import org.projet.consultationmedicalebackend.repositories.PatientRepository;
+import org.projet.consultationmedicalebackend.services.EmailService;
 import org.projet.consultationmedicalebackend.services.MedecinService;
-import org.projet.consultationmedicalebackend.utils.CustomResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +15,9 @@ import java.util.Optional;
 public class MedecinServiceImpl implements MedecinService {
 
     private final MedecinRepository medecinRepository;
-    private final PatientRepository patientRepository;
 
-    public MedecinServiceImpl(MedecinRepository medecinRepository, PatientRepository patientRepository ) {
+    public MedecinServiceImpl(MedecinRepository medecinRepository ) {
         this.medecinRepository = medecinRepository;
-        this.patientRepository = patientRepository;
     }
 
     @Override
